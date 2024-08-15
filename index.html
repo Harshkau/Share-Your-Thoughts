@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <title>Share Your Thoughts</title>
+    <style>
+        body {
+            font-family: "Raleway", sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .container h2 {
+            color: #00ff85;
+            margin-bottom: 10px;
+        }
+
+        .container p {
+            color: #a9a9a9;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 60px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            resize: none;
+            background-color: #333;
+            color: white;
+        }
+
+        .emoji-select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #2e2e2e;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(to right, #00f260, #0575e6);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+
+        .thought {
+            background-color: #2e2e2e;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            color: white;
+            border: 1px solid #444;
+        }
+
+        .thought span {
+            display: block;
+            font-size: 12px;
+            color: #a9a9a9;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Share Your Thoughts</h2>
+        <p>Express your thoughts anonymously.</p>
+        <textarea id="thoughtInput" placeholder="What's on your mind?" maxlength="200"></textarea>
+        
+        <!-- Emoji Selector -->
+        <select id="emojiSelect" class="emoji-select">
+            <option value="" selected disabled>Select an Emoji</option>
+            <option value="😀">😀 Happy</option>
+            <option value="😢">😢 Sad</option>
+            <option value="❤️">❤️ Love</option>
+            <option value="😡">😡 Angry</option>
+            <option value="👍">👍 Thumbs Up</option>
+            <option value="🎉">🎉 Celebration</option>
+        </select>
+
+        <button id="shareButton" onclick="shareThought()" disabled>Share</button>
+
+        <div id="thoughtsContainer"></div>
+    </div>
+
+    <script>
+        const thoughtInput = document.getElementById('thoughtInput');
+        const emojiSelect = document.getElementById('emojiSelect');
+        const shareButton = document.getElementById('shareButton');
+        const thoughtsContainer = document.getElementById('thoughtsContainer');
+
+        thoughtInput.addEventListener('input', toggleShareButton);
+        emojiSelect.addEventListener('change', toggleShareButton);
+
+        // Load thoughts from localStorage when the page loads
+        window.onload = function() {
+            loadThoughts();
+        };
+
+        function shareThought() {
+            const thoughtText = thoughtInput.value.trim();
+            const selectedEmoji = emojiSelect.value;
+
+            if (thoughtText && selectedEmoji) {
+                const now = new Date();
+                const formattedTime = now.toLocaleString('en-US', {
+                    month: 'numeric', day: 'numeric', year: 'numeric',
+                    hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
+                });
+
+                const thoughtData = {
+                    text: thoughtText,
+                    emoji: selectedEmoji,
+                    time: formattedTime
+                };
+
+                // Save thought to localStorage
+                saveThought(thoughtData);
+
+                // Display the thought
+                displayThought(thoughtData);
+
+                // Reset input fields
+                thoughtInput.value = '';
+                emojiSelect.selectedIndex = 0;
+                shareButton.disabled = true;
+            }
+        }
+
+        function toggleShareButton() {
+            shareButton.disabled = !(thoughtInput.value.trim() && emojiSelect.value);
+        }
+
+        function saveThought(thought) {
+            let thoughts = JSON.parse(localStorage.getItem('thoughts')) || [];
+            thoughts.unshift(thought); // Add the new thought to the beginning of the array
+            localStorage.setItem('thoughts', JSON.stringify(thoughts));
+        }
+
+        function loadThoughts() {
+            const thoughts = JSON.parse(localStorage.getItem('thoughts')) || [];
+            thoughts.forEach(thought => displayThought(thought));
+        }
+
+        function displayThought(thought) {
+            const thoughtDiv = document.createElement('div');
+            thoughtDiv.classList.add('thought');
+            thoughtDiv.innerHTML = `${thought.emoji} ${thought.text}<span>${thought.time}</span>`;
+            thoughtsContainer.appendChild(thoughtDiv);
+        }
+    </script>
+</body>
+</html>
